@@ -128,6 +128,11 @@
       cursor: pointer;
       transition: all 0.3s;
       border: 2px solid transparent;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
     }
 
     .checkbox-item:hover {
@@ -191,6 +196,11 @@
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
     }
 
     .btn-primary {
@@ -198,9 +208,14 @@
       color: white;
     }
 
-    .btn-primary:hover {
+    .btn-primary:hover, .btn-primary:active {
       transform: translateY(-2px);
       box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+      opacity: 0.9;
     }
 
     .btn-primary:disabled {
@@ -214,6 +229,10 @@
       background: #f5f5f5;
       color: #333;
       margin-top: 10px;
+    }
+
+    .btn-secondary:active {
+      background: #e0e0e0;
     }
 
     .hidden {
@@ -378,9 +397,14 @@
       cursor: pointer;
       transition: all 0.3s;
       font-size: 14px;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
     }
 
-    .app-tag:hover {
+    .app-tag:hover, .app-tag:active {
       background: #e0e8ff;
     }
 
@@ -568,13 +592,8 @@
         </div>
 
         <div class="form-group">
-          <label class="required">姓名</label>
-          <input type="text" id="userName" placeholder="请输入您的姓名">
-        </div>
-
-        <div class="form-group">
-          <label class="required">手机号</label>
-          <input type="tel" id="userPhone" placeholder="请输入您的手机号" maxlength="11">
+          <label class="required">企业微信名称</label>
+          <input type="text" id="userName" placeholder="请输入您的企业微信名称">
         </div>
 
         <div class="form-group">
@@ -694,32 +713,32 @@
         <div class="form-group">
           <label class="required">不满意原因（可多选）</label>
           <div class="checkbox-group" id="dissatisfiedReasons">
-            <label class="checkbox-item" onclick="toggleCheckbox(this)">
-              <input type="checkbox" name="dissatisfied" value="相同内容重复多次推荐">
+            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="dissatisfied" value="相同内容重复多次推荐" onclick="handleCheckboxClick(this)">
               <span>相同内容重复多次推荐</span>
             </label>
-            <label class="checkbox-item" onclick="toggleCheckbox(this)">
-              <input type="checkbox" name="dissatisfied" value="广告出现频次过高">
+            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="dissatisfied" value="广告出现频次过高" onclick="handleCheckboxClick(this)">
               <span>广告出现频次过高</span>
             </label>
-            <label class="checkbox-item" onclick="toggleCheckbox(this)">
-              <input type="checkbox" name="dissatisfied" value="广告出现很突兀，与上下文不相关">
+            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="dissatisfied" value="广告出现很突兀，与上下文不相关" onclick="handleCheckboxClick(this)">
               <span>广告出现很突兀，与上下文不相关</span>
             </label>
-            <label class="checkbox-item" onclick="toggleCheckbox(this)">
-              <input type="checkbox" name="dissatisfied" value="推荐的广告不是我感兴趣的">
+            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="dissatisfied" value="推荐的广告不是我感兴趣的" onclick="handleCheckboxClick(this)">
               <span>推荐的广告不是我感兴趣的</span>
             </label>
-            <label class="checkbox-item" onclick="toggleCheckbox(this)">
-              <input type="checkbox" name="dissatisfied" value="素材样式影响阅读">
+            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="dissatisfied" value="素材样式影响阅读" onclick="handleCheckboxClick(this)">
               <span>素材样式影响阅读</span>
             </label>
-            <label class="checkbox-item" onclick="toggleCheckbox(this)">
-              <input type="checkbox" name="dissatisfied" value="广告内容低质/虚假">
+            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="dissatisfied" value="广告内容低质/虚假" onclick="handleCheckboxClick(this)">
               <span>广告内容低质/虚假</span>
             </label>
-            <label class="checkbox-item" onclick="toggleCheckbox(this)">
-              <input type="checkbox" name="dissatisfied" value="其他">
+            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="dissatisfied" value="其他" onclick="handleCheckboxClick(this)">
               <span>其他（请说明）</span>
             </label>
           </div>
@@ -766,28 +785,28 @@
         <div class="form-group">
           <label class="required">满意原因（可多选）</label>
           <div class="checkbox-group" id="satisfiedReasons">
-            <label class="checkbox-item" onclick="toggleCheckbox(this)">
-              <input type="checkbox" name="satisfied" value="广告频率适中">
+            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="satisfied" value="广告频率适中" onclick="handleCheckboxClick(this)">
               <span>广告频率适中</span>
             </label>
-            <label class="checkbox-item" onclick="toggleCheckbox(this)">
-              <input type="checkbox" name="satisfied" value="广告出现与上下文相关，不打扰">
+            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="satisfied" value="广告出现与上下文相关，不打扰" onclick="handleCheckboxClick(this)">
               <span>广告出现与上下文相关，不打扰</span>
             </label>
-            <label class="checkbox-item" onclick="toggleCheckbox(this)">
-              <input type="checkbox" name="satisfied" value="推荐精准符合兴趣">
+            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="satisfied" value="推荐精准符合兴趣" onclick="handleCheckboxClick(this)">
               <span>推荐精准符合兴趣</span>
             </label>
-            <label class="checkbox-item" onclick="toggleCheckbox(this)">
-              <input type="checkbox" name="satisfied" value="素材样式美观">
+            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="satisfied" value="素材样式美观" onclick="handleCheckboxClick(this)">
               <span>素材样式美观</span>
             </label>
-            <label class="checkbox-item" onclick="toggleCheckbox(this)">
-              <input type="checkbox" name="satisfied" value="广告内容有价值">
+            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="satisfied" value="广告内容有价值" onclick="handleCheckboxClick(this)">
               <span>广告内容有价值</span>
             </label>
-            <label class="checkbox-item" onclick="toggleCheckbox(this)">
-              <input type="checkbox" name="satisfied" value="其他">
+            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="satisfied" value="其他" onclick="handleCheckboxClick(this)">
               <span>其他（请说明）</span>
             </label>
           </div>
@@ -904,7 +923,6 @@
             wuid: wuid,
             device_id: this.getDeviceId(),
             user_name: responseData.userName,
-            user_phone: responseData.userPhone,
             user_wechat: responseData.userWechat || null,
             user_wuid: responseData.userWuid || null,
             app_name: responseData.appName,
@@ -988,7 +1006,6 @@
       const userCache = SurveyDB.getUserCache();
       if (userCache) {
         document.getElementById('userName').value = userCache.name || '';
-        document.getElementById('userPhone').value = userCache.phone || '';
         document.getElementById('userWechat').value = userCache.wechat || '';
         document.getElementById('userWuid').value = userCache.wuid || '';
         checkDualInput();
@@ -1054,22 +1071,11 @@
     // 步骤1 -> 步骤2
     function goToStep2() {
       const name = document.getElementById('userName').value.trim();
-      const phone = document.getElementById('userPhone').value.trim();
       const wechat = document.getElementById('userWechat').value.trim();
       const wuid = document.getElementById('userWuid').value.trim();
 
       if (!name) {
-        alert('请输入姓名');
-        return;
-      }
-
-      if (!phone) {
-        alert('请输入手机号');
-        return;
-      }
-
-      if (!/^1[3-9]\d{9}$/.test(phone)) {
-        alert('请输入正确的手机号');
+        alert('请输入企业微信名称');
         return;
       }
 
@@ -1082,7 +1088,6 @@
       // 缓存用户信息
       SurveyDB.saveUserCache({
         name: name,
-        phone: phone,
         wechat: wechat,
         wuid: wuid
       });
@@ -1162,13 +1167,29 @@
     }
 
     // 切换复选框
-    function toggleCheckbox(el) {
+    function toggleCheckbox(el, event) {
+      // 阻止事件冒泡，避免点击checkbox时触发两次
+      if (event && event.target.type === 'checkbox') {
+        return;
+      }
+      
       const checkbox = el.querySelector('input');
       checkbox.checked = !checkbox.checked;
       el.classList.toggle('selected', checkbox.checked);
 
       const value = checkbox.value;
       if (value === '其他') {
+        const type = checkbox.name === 'dissatisfied' ? 'Dis' : 'Sat';
+        document.getElementById('otherReason' + type).classList.toggle('hidden', !checkbox.checked);
+      }
+    }
+    
+    // 处理checkbox原生点击
+    function handleCheckboxClick(checkbox) {
+      const el = checkbox.closest('.checkbox-item');
+      el.classList.toggle('selected', checkbox.checked);
+      
+      if (checkbox.value === '其他') {
         const type = checkbox.name === 'dissatisfied' ? 'Dis' : 'Sat';
         document.getElementById('otherReason' + type).classList.toggle('hidden', !checkbox.checked);
       }
@@ -1270,7 +1291,6 @@
       const response = {
         // 基础信息
         userName: userCache?.name || '',
-        userPhone: userCache?.phone || '',
         userWechat: userCache?.wechat || '',
         userWuid: userCache?.wuid || '',
         // APP体验记录
