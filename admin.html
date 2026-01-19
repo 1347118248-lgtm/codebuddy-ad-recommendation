@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>问卷数据看板</title>
+  <title>PCAD广告推荐体验 - 数据看板</title>
   <style>
     * {
       margin: 0;
@@ -723,7 +723,7 @@
 </head>
 <body>
   <div class="header">
-    <h1>APP体验问卷数据看板</h1>
+    <h1>PCAD广告推荐体验 - 数据看板</h1>
     <p>数据分析与可视化</p>
     <div class="header-actions">
       <a href="index.html">← 返回问卷页面</a>
@@ -895,17 +895,65 @@
     </div>
   </div>
 
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    // ============ Supabase 配置 ============
+    const SUPABASE_URL = 'https://isbqjuyaxkmfksprzndf.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlzYnFqdXlheGttZmtzcHJ6bmRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc2MjQ2MjAsImV4cCI6MjA1MzIwMDYyMH0.sb_publishable_ndH8Mvmxq2CR4SNIF0JklQ_Wxtm0dJ1';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     // ============ 数据库模块 ============
     const SurveyDB = {
-      dbName: 'app_survey_db',
-      
-      getResponses() {
+      // 获取所有问卷响应（从Supabase）
+      async getResponses() {
         try {
-          const data = localStorage.getItem(`${this.dbName}_responses`);
-          return data ? JSON.parse(data) : [];
+          const { data, error } = await supabase
+            .from('survey_responses')
+            .select('*')
+            .order('created_at', { ascending: false });
+          
+          if (error) throw error;
+          
+          // 转换字段名以兼容现有代码
+          return (data || []).map(row => ({
+            id: row.id,
+            wuid: row.wuid,
+            deviceId: row.device_id,
+            userName: row.user_name,
+            userPhone: row.user_phone,
+            userWechat: row.user_wechat,
+            userWuid: row.user_wuid,
+            appName: row.app_name,
+            startTime: row.start_time,
+            endTime: row.end_time,
+            score: row.score,
+            dissatisfiedReasons: row.dissatisfied_reasons,
+            satisfiedReasons: row.satisfied_reasons,
+            otherReason: row.other_reason,
+            screenshots: row.screenshots,
+            uploadTime: row.upload_time || row.created_at
+          }));
         } catch (e) {
+          console.error('获取数据失败:', e);
           return [];
+        }
+      },
+
+      // 清空所有数据
+      async clearAll() {
+        try {
+          const { error } = await supabase
+            .from('survey_responses')
+            .delete()
+            .neq('id', 0); // 删除所有记录
+          
+          if (error) throw error;
+          return { success: true };
+        } catch (e) {
+          console.error('清空数据失败:', e);
+          return { success: false, error: e.message };
         }
       }
     };
@@ -950,7 +998,10 @@
       const endDate = document.getElementById('endDate').value;
       const appFilter = document.getElementById('appFilter').value;
 
-      allData = SurveyDB.getResponses();
+      // 显示加载状态
+      document.getElementById('dataTable').innerHTML = '<tr><td colspan="12" class="empty-state">加载中...</td></tr>';
+
+      allData = await SurveyDB.getResponses();
 
       // 日期筛选
       filteredData = allData.filter(item => {
@@ -1555,8 +1606,8 @@
     }
 
     // ============ 清空数据 ============
-    function clearAllData() {
-      const count = SurveyDB.getResponses().length;
+    async function clearAllData() {
+      const count = allData.length;
       if (count === 0) {
         alert('当前没有数据需要清空');
         return;
@@ -1564,9 +1615,13 @@
       
       if (confirm(`确定要清空所有 ${count} 条问卷数据吗？\n\n此操作不可恢复！`)) {
         if (confirm('再次确认：清空后数据将无法恢复，是否继续？')) {
-          localStorage.removeItem('app_survey_db_responses');
-          alert('数据已清空！');
-          loadData();
+          const result = await SurveyDB.clearAll();
+          if (result.success) {
+            alert('数据已清空！');
+            await loadData();
+          } else {
+            alert('清空数据失败：' + (result.error || '未知错误'));
+          }
         }
       }
     }

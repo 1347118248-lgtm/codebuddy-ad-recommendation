@@ -784,7 +784,15 @@
     </div>
   </div>
 
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    // ============ Supabase 配置 ============
+    const SUPABASE_URL = 'https://isbqjuyaxkmfksprzndf.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlzYnFqdXlheGttZmtzcHJ6bmRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc2MjQ2MjAsImV4cCI6MjA1MzIwMDYyMH0.sb_publishable_ndH8Mvmxq2CR4SNIF0JklQ_Wxtm0dJ1';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     // ============ 数据库模块 ============
     const SurveyDB = {
       dbName: 'app_survey_db',
@@ -824,39 +832,50 @@
         return deviceId;
       },
       
-      // 检查设备是否已提交过
-      hasDeviceSubmitted() {
-        const responses = this.getResponses();
-        const deviceId = this.getDeviceId();
-        return responses.some(r => r.deviceId === deviceId);
-      },
-      
-      // 获取所有问卷响应
-      getResponses() {
+      // 检查设备是否已提交过（通过Supabase查询）
+      async hasDeviceSubmitted() {
         try {
-          const data = localStorage.getItem(`${this.dbName}_responses`);
-          return data ? JSON.parse(data) : [];
+          const deviceId = this.getDeviceId();
+          const { data, error } = await supabase
+            .from('survey_responses')
+            .select('id')
+            .eq('device_id', deviceId)
+            .limit(1);
+          
+          if (error) throw error;
+          return data && data.length > 0;
         } catch (e) {
-          return [];
+          console.error('检查设备提交状态失败:', e);
+          return false;
         }
       },
       
-      // 保存问卷响应
-      saveResponse(response) {
+      // 保存问卷响应到Supabase
+      async saveResponse(response) {
         try {
-          const responses = this.getResponses();
           const wuid = 'W' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
           
-          const newResponse = {
-            id: Date.now().toString(),
-            wuid: wuid,
-            deviceId: this.getDeviceId(),
-            ...response,
-            uploadTime: new Date().toISOString()
-          };
+          const { data, error } = await supabase
+            .from('survey_responses')
+            .insert({
+              wuid: wuid,
+              device_id: this.getDeviceId(),
+              user_name: response.userName,
+              user_phone: response.userPhone,
+              user_wechat: response.userWechat,
+              user_wuid: response.userWuid,
+              app_name: response.appName,
+              start_time: response.startTime,
+              end_time: response.endTime,
+              score: response.score,
+              dissatisfied_reasons: response.dissatisfiedReasons,
+              satisfied_reasons: response.satisfiedReasons,
+              other_reason: response.otherReason,
+              screenshots: response.screenshots
+            })
+            .select();
           
-          responses.push(newResponse);
-          localStorage.setItem(`${this.dbName}_responses`, JSON.stringify(responses));
+          if (error) throw error;
           return { success: true, wuid: wuid };
         } catch (e) {
           console.error('保存失败:', e);
@@ -864,12 +883,12 @@
         }
       },
       
-      // 保存用户信息缓存
+      // 保存用户信息缓存（本地）
       saveUserCache(userData) {
         localStorage.setItem(`${this.dbName}_user_cache`, JSON.stringify(userData));
       },
       
-      // 获取用户信息缓存
+      // 获取用户信息缓存（本地）
       getUserCache() {
         try {
           const data = localStorage.getItem(`${this.dbName}_user_cache`);
@@ -888,13 +907,14 @@
     let uploadedFilesSat = [];
 
     // 初始化
-    function init() {
+    async function init() {
       // 显示设备ID
       const deviceId = SurveyDB.getDeviceId();
       document.getElementById('deviceIdDisplay').textContent = deviceId;
       
       // 检查是否已提交过
-      if (SurveyDB.hasDeviceSubmitted()) {
+      const hasSubmitted = await SurveyDB.hasDeviceSubmitted();
+      if (hasSubmitted) {
         document.getElementById('duplicateWarning').classList.remove('hidden');
       }
       
@@ -1198,7 +1218,7 @@
       };
 
       try {
-        const result = SurveyDB.saveResponse(response);
+        const result = await SurveyDB.saveResponse(response);
         if (result.success) {
           showStep('step-success');
         } else {
@@ -1206,7 +1226,7 @@
         }
       } catch (e) {
         console.error('提交失败:', e);
-        alert('提交失败，请重试');
+        alert('提交失败，请检查网络后重试');
         btn.disabled = false;
         btn.textContent = '提交问卷';
       }
