@@ -98,6 +98,12 @@
       font-size: 16px;
       transition: border-color 0.3s;
       background: white;
+      box-sizing: border-box;
+      max-width: 100%;
+    }
+
+    input[type="datetime-local"] {
+      min-width: 0;
     }
 
     input:focus, select:focus {
@@ -479,13 +485,13 @@
       background: rgba(244,67,54,0.9);
     }
 
-    @media (max-width: 400px) {
+    @media (max-width: 500px) {
       body {
         padding: 10px;
       }
       
       .card {
-        padding: 18px;
+        padding: 16px;
       }
 
       h1 {
@@ -495,6 +501,24 @@
       .time-row {
         grid-template-columns: 1fr;
         gap: 15px;
+      }
+
+      input[type="datetime-local"] {
+        font-size: 14px;
+        padding: 12px 10px;
+      }
+
+      .dual-input {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .dual-separator {
+        display: none;
+      }
+
+      .dual-input input {
+        width: 100%;
       }
     }
   </style>
