@@ -178,6 +178,15 @@
       background: #43a047;
     }
 
+    .btn-danger {
+      background: #f44336;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #d32f2f;
+    }
+
     /* 图表区域 */
     .chart-container {
       display: grid;
@@ -734,6 +743,7 @@
         <button class="btn btn-primary" onclick="loadData()">筛选</button>
         <button class="btn btn-secondary" onclick="refreshData()">刷新</button>
         <button class="btn btn-success" onclick="exportData()">导出CSV</button>
+        <button class="btn btn-danger" onclick="clearAllData()">清空数据</button>
       </div>
     </div>
 
@@ -1542,6 +1552,23 @@
       link.href = URL.createObjectURL(blob);
       link.download = `survey_data_${formatDate(new Date())}.csv`;
       link.click();
+    }
+
+    // ============ 清空数据 ============
+    function clearAllData() {
+      const count = SurveyDB.getResponses().length;
+      if (count === 0) {
+        alert('当前没有数据需要清空');
+        return;
+      }
+      
+      if (confirm(`确定要清空所有 ${count} 条问卷数据吗？\n\n此操作不可恢复！`)) {
+        if (confirm('再次确认：清空后数据将无法恢复，是否继续？')) {
+          localStorage.removeItem('app_survey_db_responses');
+          alert('数据已清空！');
+          loadData();
+        }
+      }
     }
 
     // 初始化
