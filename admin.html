@@ -935,7 +935,7 @@
             dissatisfiedReasons: row.dissatisfied_reasons,
             satisfiedReasons: row.satisfied_reasons,
             otherReason: row.other_reason,
-            screenshotCount: row.screenshot_count || 0,
+            screenshots: row.screenshots || [],
             uploadTime: row.upload_time || row.created_at
           }));
         } catch (e) {
