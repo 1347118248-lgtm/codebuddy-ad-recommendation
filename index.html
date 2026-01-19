@@ -859,45 +859,63 @@
       // 保存问卷响应到Supabase
       async saveResponse(response) {
         if (!supabase) {
-          return { success: false, error: 'Supabase未初始化' };
+          return { success: false, error: 'Supabase未初始化，请刷新页面重试' };
         }
         try {
           const wuid = 'W' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
           
-          // 压缩截图：限制每张图片大小
+          // 压缩截图：限制每张图片大小（50KB）
           const compressedScreenshots = response.screenshots.map(img => {
-            // 如果图片超过500KB，进行压缩标记（实际压缩需要canvas）
-            if (img.length > 500000) {
-              return img.substring(0, 500000); // 简单截断，实际应该压缩
+            if (img.length > 50000) {
+              return img.substring(0, 50000);
             }
             return img;
           });
           
+          console.log('正在提交数据到Supabase...');
+          const insertData = {
+            wuid: wuid,
+            device_id: this.getDeviceId(),
+            user_name: response.userName,
+            user_phone: response.userPhone,
+            user_wechat: response.userWechat || null,
+            user_wuid: response.userWuid || null,
+            app_name: response.appName,
+            start_time: response.startTime || null,
+            end_time: response.endTime || null,
+            score: response.score,
+            dissatisfied_reasons: response.dissatisfiedReasons || null,
+            satisfied_reasons: response.satisfiedReasons || null,
+            other_reason: response.otherReason || null,
+            screenshots: compressedScreenshots
+          };
+          console.log('提交数据:', JSON.stringify(insertData).substring(0, 500) + '...');
+          
           const { data, error } = await supabase
             .from('survey_responses')
-            .insert({
-              wuid: wuid,
-              device_id: this.getDeviceId(),
-              user_name: response.userName,
-              user_phone: response.userPhone,
-              user_wechat: response.userWechat,
-              user_wuid: response.userWuid,
-              app_name: response.appName,
-              start_time: response.startTime,
-              end_time: response.endTime,
-              score: response.score,
-              dissatisfied_reasons: response.dissatisfiedReasons,
-              satisfied_reasons: response.satisfiedReasons,
-              other_reason: response.otherReason,
-              screenshots: compressedScreenshots
-            })
+            .insert(insertData)
             .select();
           
-          if (error) throw error;
+          if (error) {
+            console.error('Supabase错误:', error);
+            // 提供更友好的错误信息
+            if (error.code === '42P01') {
+              return { success: false, error: '数据表不存在，请联系管理员创建survey_responses表' };
+            }
+            if (error.code === '42501') {
+              return { success: false, error: '权限不足，请联系管理员配置RLS策略' };
+            }
+            if (error.message && error.message.includes('row-level security')) {
+              return { success: false, error: 'RLS策略未配置，请联系管理员' };
+            }
+            throw error;
+          }
+          
+          console.log('提交成功:', data);
           return { success: true, wuid: wuid };
         } catch (e) {
           console.error('保存失败:', e);
-          return { success: false, error: e.message };
+          return { success: false, error: e.message || '网络请求失败' };
         }
       },
       
@@ -1245,7 +1263,7 @@
         }
       } catch (e) {
         console.error('提交失败:', e);
-        alert('提交失败，请检查网络后重试');
+        alert('提交失败：' + (e.message || '未知错误') + '\n请检查网络后重试');
         btn.disabled = false;
         btn.textContent = '提交问卷';
       }
