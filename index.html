@@ -908,17 +908,11 @@
 
     // 初始化
     async function init() {
-      // 显示设备ID
+      // 立即显示设备ID（同步操作，不等待）
       const deviceId = SurveyDB.getDeviceId();
       document.getElementById('deviceIdDisplay').textContent = deviceId;
       
-      // 检查是否已提交过
-      const hasSubmitted = await SurveyDB.hasDeviceSubmitted();
-      if (hasSubmitted) {
-        document.getElementById('duplicateWarning').classList.remove('hidden');
-      }
-      
-      // 恢复用户缓存
+      // 恢复用户缓存（同步操作）
       const userCache = SurveyDB.getUserCache();
       if (userCache) {
         document.getElementById('userName').value = userCache.name || '';
@@ -928,8 +922,15 @@
         checkDualInput();
       }
       
-      // 设置默认时间
+      // 设置默认时间（同步操作）
       setDefaultTimes();
+      
+      // 异步检查是否已提交过（后台执行，不阻塞页面）
+      SurveyDB.hasDeviceSubmitted().then(hasSubmitted => {
+        if (hasSubmitted) {
+          document.getElementById('duplicateWarning').classList.remove('hidden');
+        }
+      }).catch(e => console.error('检查提交状态失败:', e));
     }
 
     // 设置默认时间
