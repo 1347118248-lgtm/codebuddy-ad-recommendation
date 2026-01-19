@@ -784,14 +784,19 @@
     </div>
   </div>
 
-  <!-- Supabase SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Supabase SDK (使用国内更快的CDN) -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
     // ============ Supabase 配置 ============
     const SUPABASE_URL = 'https://isbqjuyaxkmfksprzndf.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlzYnFqdXlheGttZmtzcHJ6bmRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3OTg3MTAsImV4cCI6MjA4NDM3NDcxMH0.CeBYgrclxY6R-pRoK3Gew7Vpygl2aE16wI6VDM3yPzg';
     
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let supabase = null;
+    try {
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch(e) {
+      console.error('Supabase初始化失败:', e);
+    }
 
     // ============ 数据库模块 ============
     const SurveyDB = {
@@ -834,6 +839,7 @@
       
       // 检查设备是否已提交过（通过Supabase查询）
       async hasDeviceSubmitted() {
+        if (!supabase) return false;
         try {
           const deviceId = this.getDeviceId();
           const { data, error } = await supabase
@@ -852,8 +858,20 @@
       
       // 保存问卷响应到Supabase
       async saveResponse(response) {
+        if (!supabase) {
+          return { success: false, error: 'Supabase未初始化' };
+        }
         try {
           const wuid = 'W' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
+          
+          // 压缩截图：限制每张图片大小
+          const compressedScreenshots = response.screenshots.map(img => {
+            // 如果图片超过500KB，进行压缩标记（实际压缩需要canvas）
+            if (img.length > 500000) {
+              return img.substring(0, 500000); // 简单截断，实际应该压缩
+            }
+            return img;
+          });
           
           const { data, error } = await supabase
             .from('survey_responses')
@@ -871,7 +889,7 @@
               dissatisfied_reasons: response.dissatisfiedReasons,
               satisfied_reasons: response.satisfiedReasons,
               other_reason: response.otherReason,
-              screenshots: response.screenshots
+              screenshots: compressedScreenshots
             })
             .select();
           

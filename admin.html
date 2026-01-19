@@ -896,18 +896,27 @@
   </div>
 
   <!-- Supabase SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
     // ============ Supabase 配置 ============
     const SUPABASE_URL = 'https://isbqjuyaxkmfksprzndf.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlzYnFqdXlheGttZmtzcHJ6bmRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3OTg3MTAsImV4cCI6MjA4NDM3NDcxMH0.CeBYgrclxY6R-pRoK3Gew7Vpygl2aE16wI6VDM3yPzg';
     
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let supabase = null;
+    try {
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch(e) {
+      console.error('Supabase初始化失败:', e);
+    }
 
     // ============ 数据库模块 ============
     const SurveyDB = {
       // 获取所有问卷响应（从Supabase）
       async getResponses() {
+        if (!supabase) {
+          console.error('Supabase未初始化');
+          return [];
+        }
         try {
           const { data, error } = await supabase
             .from('survey_responses')
@@ -943,6 +952,9 @@
 
       // 清空所有数据
       async clearAll() {
+        if (!supabase) {
+          return { success: false, error: 'Supabase未初始化' };
+        }
         try {
           const { error } = await supabase
             .from('survey_responses')
