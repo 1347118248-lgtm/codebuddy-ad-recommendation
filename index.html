@@ -849,9 +849,6 @@
         try {
           const wuid = 'W' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
           
-          // 不保存截图到数据库，改为只记录数量
-          const screenshotCount = responseData.screenshots ? responseData.screenshots.length : 0;
-          
           const insertData = {
             wuid: wuid,
             device_id: this.getDeviceId(),
@@ -865,8 +862,7 @@
             score: responseData.score,
             dissatisfied_reasons: responseData.dissatisfiedReasons || null,
             satisfied_reasons: responseData.satisfiedReasons || null,
-            other_reason: responseData.otherReason || null,
-            screenshot_count: screenshotCount
+            other_reason: responseData.otherReason || null
           };
           
           console.log('正在提交数据...', insertData);
