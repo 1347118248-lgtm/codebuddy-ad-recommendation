@@ -3,6 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <!-- 微信分享优化：允许在微信内直接打开 -->
+  <meta name="format-detection" content="telephone=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <!-- Open Graph 标签用于微信分享显示 -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="PCAD广告推荐体验">
+  <meta property="og:description" content="请填写您的广告体验反馈">
+  <meta property="og:url" content="">
   <title>PCAD广告推荐体验</title>
   <style>
     * {
@@ -133,6 +143,18 @@
       -webkit-user-select: none;
       user-select: none;
       touch-action: manipulation;
+      position: relative;
+    }
+
+    .checkbox-item input[type="checkbox"] {
+      position: relative;
+      z-index: 2;
+      flex-shrink: 0;
+    }
+
+    .checkbox-item span {
+      flex: 1;
+      pointer-events: none;
     }
 
     .checkbox-item:hover {
@@ -713,34 +735,34 @@
         <div class="form-group">
           <label class="required">不满意原因（可多选）</label>
           <div class="checkbox-group" id="dissatisfiedReasons">
-            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
-              <input type="checkbox" name="dissatisfied" value="相同内容重复多次推荐" onclick="handleCheckboxClick(this)">
+            <div class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="dissatisfied" value="相同内容重复多次推荐">
               <span>相同内容重复多次推荐</span>
-            </label>
-            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
-              <input type="checkbox" name="dissatisfied" value="广告出现频次过高" onclick="handleCheckboxClick(this)">
+            </div>
+            <div class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="dissatisfied" value="广告出现频次过高">
               <span>广告出现频次过高</span>
-            </label>
-            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
-              <input type="checkbox" name="dissatisfied" value="广告出现很突兀，与上下文不相关" onclick="handleCheckboxClick(this)">
+            </div>
+            <div class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="dissatisfied" value="广告出现很突兀，与上下文不相关">
               <span>广告出现很突兀，与上下文不相关</span>
-            </label>
-            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
-              <input type="checkbox" name="dissatisfied" value="推荐的广告不是我感兴趣的" onclick="handleCheckboxClick(this)">
+            </div>
+            <div class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="dissatisfied" value="推荐的广告不是我感兴趣的">
               <span>推荐的广告不是我感兴趣的</span>
-            </label>
-            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
-              <input type="checkbox" name="dissatisfied" value="素材样式影响阅读" onclick="handleCheckboxClick(this)">
+            </div>
+            <div class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="dissatisfied" value="素材样式影响阅读">
               <span>素材样式影响阅读</span>
-            </label>
-            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
-              <input type="checkbox" name="dissatisfied" value="广告内容低质/虚假" onclick="handleCheckboxClick(this)">
+            </div>
+            <div class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="dissatisfied" value="广告内容低质/虚假">
               <span>广告内容低质/虚假</span>
-            </label>
-            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
-              <input type="checkbox" name="dissatisfied" value="其他" onclick="handleCheckboxClick(this)">
+            </div>
+            <div class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="dissatisfied" value="其他">
               <span>其他（请说明）</span>
-            </label>
+            </div>
           </div>
         </div>
 
@@ -785,30 +807,30 @@
         <div class="form-group">
           <label class="required">满意原因（可多选）</label>
           <div class="checkbox-group" id="satisfiedReasons">
-            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
-              <input type="checkbox" name="satisfied" value="广告频率适中" onclick="handleCheckboxClick(this)">
+            <div class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="satisfied" value="广告频率适中">
               <span>广告频率适中</span>
-            </label>
-            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
-              <input type="checkbox" name="satisfied" value="广告出现与上下文相关，不打扰" onclick="handleCheckboxClick(this)">
+            </div>
+            <div class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="satisfied" value="广告出现与上下文相关，不打扰">
               <span>广告出现与上下文相关，不打扰</span>
-            </label>
-            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
-              <input type="checkbox" name="satisfied" value="推荐精准符合兴趣" onclick="handleCheckboxClick(this)">
+            </div>
+            <div class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="satisfied" value="推荐精准符合兴趣">
               <span>推荐精准符合兴趣</span>
-            </label>
-            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
-              <input type="checkbox" name="satisfied" value="素材样式美观" onclick="handleCheckboxClick(this)">
+            </div>
+            <div class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="satisfied" value="素材样式美观">
               <span>素材样式美观</span>
-            </label>
-            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
-              <input type="checkbox" name="satisfied" value="广告内容有价值" onclick="handleCheckboxClick(this)">
+            </div>
+            <div class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="satisfied" value="广告内容有价值">
               <span>广告内容有价值</span>
-            </label>
-            <label class="checkbox-item" onclick="toggleCheckbox(this, event)">
-              <input type="checkbox" name="satisfied" value="其他" onclick="handleCheckboxClick(this)">
+            </div>
+            <div class="checkbox-item" onclick="toggleCheckbox(this, event)">
+              <input type="checkbox" name="satisfied" value="其他">
               <span>其他（请说明）</span>
-            </label>
+            </div>
           </div>
         </div>
 
@@ -1168,27 +1190,26 @@
 
     // 切换复选框
     function toggleCheckbox(el, event) {
-      // 阻止事件冒泡，避免点击checkbox时触发两次
-      if (event && event.target.type === 'checkbox') {
+      const checkbox = el.querySelector('input[type="checkbox"]');
+      
+      // 如果点击的是checkbox本身，让它自己处理，但仍需更新样式
+      if (event && event.target === checkbox) {
+        // checkbox会自己切换状态，只需更新样式
+        setTimeout(() => {
+          el.classList.toggle('selected', checkbox.checked);
+          handleOtherReason(checkbox);
+        }, 0);
         return;
       }
       
-      const checkbox = el.querySelector('input');
+      // 点击其他区域时，手动切换checkbox状态
       checkbox.checked = !checkbox.checked;
       el.classList.toggle('selected', checkbox.checked);
-
-      const value = checkbox.value;
-      if (value === '其他') {
-        const type = checkbox.name === 'dissatisfied' ? 'Dis' : 'Sat';
-        document.getElementById('otherReason' + type).classList.toggle('hidden', !checkbox.checked);
-      }
+      handleOtherReason(checkbox);
     }
     
-    // 处理checkbox原生点击
-    function handleCheckboxClick(checkbox) {
-      const el = checkbox.closest('.checkbox-item');
-      el.classList.toggle('selected', checkbox.checked);
-      
+    // 处理"其他"原因显示
+    function handleOtherReason(checkbox) {
       if (checkbox.value === '其他') {
         const type = checkbox.name === 'dissatisfied' ? 'Dis' : 'Sat';
         document.getElementById('otherReason' + type).classList.toggle('hidden', !checkbox.checked);
@@ -1364,8 +1385,31 @@
       showStep('step-app');
     }
 
+    // ============ 微信环境检测与优化 ============
+    function isWechatBrowser() {
+      const ua = navigator.userAgent.toLowerCase();
+      return ua.indexOf('micromessenger') !== -1;
+    }
+
+    // 微信内分享优化初始化
+    function initWechatShare() {
+      if (!isWechatBrowser()) return;
+      
+      // 设置页面标题（微信分享会使用）
+      document.title = 'PCAD广告推荐体验';
+      
+      // 更新 og:url 为当前页面地址
+      const ogUrl = document.querySelector('meta[property="og:url"]');
+      if (ogUrl) {
+        ogUrl.setAttribute('content', window.location.href.split('#')[0]);
+      }
+      
+      console.log('微信浏览器环境已识别，分享优化已启用');
+    }
+
     // 初始化
     init();
+    initWechatShare();
   </script>
 </body>
 </html>
