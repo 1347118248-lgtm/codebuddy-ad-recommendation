@@ -382,6 +382,37 @@
       border-color: #667eea;
     }
 
+    /* 双输入框样式 */
+    .dual-input {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dual-input input {
+      flex: 1;
+    }
+
+    .dual-separator {
+      color: #999;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .input-hint {
+      font-size: 12px;
+      color: #999;
+      margin-top: 6px;
+    }
+
+    .input-hint.error {
+      color: #f44336;
+    }
+
+    .input-hint.success {
+      color: #4caf50;
+    }
+
     /* 上传区域样式 */
     .upload-area {
       border: 2px dashed #ccc;
@@ -502,8 +533,13 @@
         </div>
 
         <div class="form-group">
-          <label>微信号（选填）</label>
-          <input type="text" id="userWechat" placeholder="请输入您的微信号">
+          <label class="required">微信号 / WUID（任填一项）</label>
+          <div class="dual-input">
+            <input type="text" id="userWechat" placeholder="微信号" oninput="checkDualInput()">
+            <span class="dual-separator">或</span>
+            <input type="text" id="userWuid" placeholder="WUID" oninput="checkDualInput()">
+          </div>
+          <p class="input-hint" id="dualInputHint">请至少填写微信号或WUID中的一项</p>
         </div>
 
         <button class="btn btn-primary" onclick="goToStep2()">下一步</button>
@@ -746,10 +782,6 @@
         <button class="btn btn-primary" onclick="resetSurvey()" style="margin-top: 30px;">再填一份</button>
       </div>
     </div>
-
-    <div class="admin-link">
-      <a href="admin.html">管理后台</a>
-    </div>
   </div>
 
   <script>
@@ -872,6 +904,8 @@
         document.getElementById('userName').value = userCache.name || '';
         document.getElementById('userPhone').value = userCache.phone || '';
         document.getElementById('userWechat').value = userCache.wechat || '';
+        document.getElementById('userWuid').value = userCache.wuid || '';
+        checkDualInput();
       }
       
       // 设置默认时间
@@ -909,10 +943,27 @@
       showStep(stepId);
     }
 
+    // 检查双输入框
+    function checkDualInput() {
+      const wechat = document.getElementById('userWechat').value.trim();
+      const wuid = document.getElementById('userWuid').value.trim();
+      const hint = document.getElementById('dualInputHint');
+      
+      if (wechat || wuid) {
+        hint.textContent = '已填写';
+        hint.className = 'input-hint success';
+      } else {
+        hint.textContent = '请至少填写微信号或WUID中的一项';
+        hint.className = 'input-hint';
+      }
+    }
+
     // 步骤1 -> 步骤2
     function goToStep2() {
       const name = document.getElementById('userName').value.trim();
       const phone = document.getElementById('userPhone').value.trim();
+      const wechat = document.getElementById('userWechat').value.trim();
+      const wuid = document.getElementById('userWuid').value.trim();
 
       if (!name) {
         alert('请输入姓名');
@@ -929,11 +980,18 @@
         return;
       }
 
+      if (!wechat && !wuid) {
+        alert('请至少填写微信号或WUID中的一项');
+        document.getElementById('dualInputHint').className = 'input-hint error';
+        return;
+      }
+
       // 缓存用户信息
       SurveyDB.saveUserCache({
         name: name,
         phone: phone,
-        wechat: document.getElementById('userWechat').value.trim()
+        wechat: wechat,
+        wuid: wuid
       });
 
       showStep('step-app');
@@ -1125,6 +1183,7 @@
         userName: userCache?.name || '',
         userPhone: userCache?.phone || '',
         userWechat: userCache?.wechat || '',
+        userWuid: userCache?.wuid || '',
         // APP体验记录
         appName: selectedApp,
         startTime: document.getElementById('startTime').value,

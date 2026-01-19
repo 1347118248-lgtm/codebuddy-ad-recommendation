@@ -843,9 +843,11 @@
           <table>
             <thead>
               <tr>
-                <th>WUID</th>
+                <th>系统WUID</th>
                 <th>姓名</th>
                 <th>手机号</th>
+                <th>微信号</th>
+                <th>用户WUID</th>
                 <th>APP</th>
                 <th>开始时间</th>
                 <th>结束时间</th>
@@ -857,7 +859,7 @@
             </thead>
             <tbody id="dataTable">
               <tr>
-                <td colspan="10" class="empty-state">加载中...</td>
+                <td colspan="12" class="empty-state">加载中...</td>
               </tr>
             </tbody>
           </table>
@@ -1368,7 +1370,7 @@
       if (pageData.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="10">
+            <td colspan="12">
               <div class="empty-state">
                 <svg viewBox="0 0 24 24"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
                 <p>暂无数据</p>
@@ -1418,6 +1420,8 @@
             <td>${row.wuid || '-'}</td>
             <td>${row.userName || '-'}</td>
             <td>${row.userPhone || '-'}</td>
+            <td>${row.userWechat || '-'}</td>
+            <td>${row.userWuid || '-'}</td>
             <td><span class="badge badge-app">${row.appName || '-'}</span></td>
             <td>${formatDateTime(row.startTime)}</td>
             <td>${formatDateTime(row.endTime)}</td>
@@ -1511,7 +1515,7 @@
         return;
       }
 
-      const headers = ['WUID', '姓名', '手机号', '微信号', 'APP名称', '开始时间', '结束时间', '评分', '不满意原因', '满意原因', '其他原因', '设备ID', '提交时间'];
+      const headers = ['系统WUID', '姓名', '手机号', '微信号', '用户WUID', 'APP名称', '开始时间', '结束时间', '评分', '不满意原因', '满意原因', '其他原因', '设备ID', '提交时间'];
       
       const csv = [
         headers.join(','),
@@ -1520,6 +1524,7 @@
           row.userName || '',
           row.userPhone || '',
           row.userWechat || '',
+          row.userWuid || '',
           row.appName || '',
           row.startTime || '',
           row.endTime || '',
