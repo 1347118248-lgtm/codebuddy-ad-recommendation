@@ -104,6 +104,8 @@
 
     input[type="datetime-local"] {
       min-width: 0;
+      -webkit-appearance: none;
+      appearance: none;
     }
 
     input:focus, select:focus {
@@ -504,8 +506,10 @@
       }
 
       input[type="datetime-local"] {
-        font-size: 14px;
-        padding: 12px 10px;
+        font-size: 13px;
+        padding: 10px 8px;
+        width: 100% !important;
+        max-width: 100% !important;
       }
 
       .dual-input {
@@ -519,6 +523,23 @@
 
       .dual-input input {
         width: 100%;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .card {
+        padding: 12px;
+      }
+
+      input[type="datetime-local"] {
+        font-size: 12px;
+        padding: 8px 6px;
+      }
+
+      input[type="text"],
+      input[type="tel"] {
+        font-size: 14px;
+        padding: 10px 12px;
       }
     }
   </style>
