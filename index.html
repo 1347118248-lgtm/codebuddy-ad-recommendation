@@ -784,47 +784,19 @@
     </div>
   </div>
 
-  <!-- Supabase SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
-    // ============ Supabase 配置 ============
+    // ============ Supabase 配置（直接使用REST API） ============
     const SUPABASE_URL = 'https://isbqjuyaxkmfksprzndf.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlzYnFqdXlheGttZmtzcHJ6bmRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3OTg3MTAsImV4cCI6MjA4NDM3NDcxMH0.CeBYgrclxY6R-pRoK3Gew7Vpygl2aE16wI6VDM3yPzg';
-    
-    let supabase = null;
-    
-    // 等待SDK加载完成后初始化
-    function initSupabase() {
-      if (window.supabase && window.supabase.createClient) {
-        try {
-          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-          console.log('Supabase初始化成功');
-          return true;
-        } catch(e) {
-          console.error('Supabase初始化失败:', e);
-          return false;
-        }
-      }
-      return false;
-    }
-    
-    // 立即尝试初始化
-    if (!initSupabase()) {
-      // 如果失败，等待一下再试
-      setTimeout(initSupabase, 500);
-      setTimeout(initSupabase, 1500);
-      setTimeout(initSupabase, 3000);
-    }
 
-    // ============ 数据库模块 ============
+    // ============ 数据库模块（使用原生fetch） ============
     const SurveyDB = {
       dbName: 'app_survey_db',
       
-      // 获取设备ID（使用指纹技术）
+      // 获取设备ID
       getDeviceId() {
         let deviceId = localStorage.getItem(`${this.dbName}_device_id`);
         if (!deviceId) {
-          // 生成设备指纹
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
           ctx.textBaseline = 'top';
@@ -832,7 +804,6 @@
           ctx.fillText('DeviceFingerprint', 2, 2);
           const canvasData = canvas.toDataURL();
           
-          // 组合多个因素生成唯一ID
           const factors = [
             navigator.userAgent,
             navigator.language,
@@ -841,7 +812,6 @@
             canvasData.substring(0, 50)
           ].join('|');
           
-          // 简单哈希
           let hash = 0;
           for (let i = 0; i < factors.length; i++) {
             const char = factors.charCodeAt(i);
@@ -855,18 +825,18 @@
         return deviceId;
       },
       
-      // 检查设备是否已提交过（通过Supabase查询）
+      // 检查设备是否已提交过
       async hasDeviceSubmitted() {
-        if (!supabase) return false;
         try {
           const deviceId = this.getDeviceId();
-          const { data, error } = await supabase
-            .from('survey_responses')
-            .select('id')
-            .eq('device_id', deviceId)
-            .limit(1);
-          
-          if (error) throw error;
+          const response = await fetch(`${SUPABASE_URL}/rest/v1/survey_responses?device_id=eq.${encodeURIComponent(deviceId)}&select=id&limit=1`, {
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            }
+          });
+          if (!response.ok) return false;
+          const data = await response.json();
           return data && data.length > 0;
         } catch (e) {
           console.error('检查设备提交状态失败:', e);
@@ -874,70 +844,66 @@
         }
       },
       
-      // 保存问卷响应到Supabase
-      async saveResponse(response) {
-        // 尝试初始化（如果之前失败）
-        if (!supabase) {
-          initSupabase();
-        }
-        if (!supabase) {
-          return { success: false, error: 'Supabase SDK加载失败，请检查网络后刷新页面' };
-        }
+      // 保存问卷响应到Supabase（使用REST API）
+      async saveResponse(responseData) {
         try {
           const wuid = 'W' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
           
-          // 压缩截图：限制每张图片大小（50KB）
-          const compressedScreenshots = response.screenshots.map(img => {
-            if (img.length > 50000) {
-              return img.substring(0, 50000);
-            }
-            return img;
-          });
+          // 不保存截图到数据库，改为只记录数量
+          const screenshotCount = responseData.screenshots ? responseData.screenshots.length : 0;
           
-          console.log('正在提交数据到Supabase...');
           const insertData = {
             wuid: wuid,
             device_id: this.getDeviceId(),
-            user_name: response.userName,
-            user_phone: response.userPhone,
-            user_wechat: response.userWechat || null,
-            user_wuid: response.userWuid || null,
-            app_name: response.appName,
-            start_time: response.startTime || null,
-            end_time: response.endTime || null,
-            score: response.score,
-            dissatisfied_reasons: response.dissatisfiedReasons || null,
-            satisfied_reasons: response.satisfiedReasons || null,
-            other_reason: response.otherReason || null,
-            screenshots: compressedScreenshots
+            user_name: responseData.userName,
+            user_phone: responseData.userPhone,
+            user_wechat: responseData.userWechat || null,
+            user_wuid: responseData.userWuid || null,
+            app_name: responseData.appName,
+            start_time: responseData.startTime || null,
+            end_time: responseData.endTime || null,
+            score: responseData.score,
+            dissatisfied_reasons: responseData.dissatisfiedReasons || null,
+            satisfied_reasons: responseData.satisfiedReasons || null,
+            other_reason: responseData.otherReason || null,
+            screenshot_count: screenshotCount
           };
-          console.log('提交数据:', JSON.stringify(insertData).substring(0, 500) + '...');
           
-          const { data, error } = await supabase
-            .from('survey_responses')
-            .insert(insertData)
-            .select();
+          console.log('正在提交数据...', insertData);
           
-          if (error) {
-            console.error('Supabase错误:', error);
-            // 提供更友好的错误信息
-            if (error.code === '42P01') {
-              return { success: false, error: '数据表不存在，请联系管理员创建survey_responses表' };
+          const response = await fetch(`${SUPABASE_URL}/rest/v1/survey_responses`, {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=representation'
+            },
+            body: JSON.stringify(insertData)
+          });
+          
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Supabase错误:', response.status, errorText);
+            
+            if (response.status === 404) {
+              return { success: false, error: '数据表不存在，请先创建survey_responses表' };
             }
-            if (error.code === '42501') {
-              return { success: false, error: '权限不足，请联系管理员配置RLS策略' };
+            if (response.status === 401) {
+              return { success: false, error: '认证失败，请检查API密钥' };
             }
-            if (error.message && error.message.includes('row-level security')) {
-              return { success: false, error: 'RLS策略未配置，请联系管理员' };
+            if (response.status === 403) {
+              return { success: false, error: '权限不足，请配置RLS策略允许插入' };
             }
-            throw error;
+            return { success: false, error: `服务器错误(${response.status}): ${errorText}` };
           }
           
+          const data = await response.json();
           console.log('提交成功:', data);
           return { success: true, wuid: wuid };
         } catch (e) {
           console.error('保存失败:', e);
-          return { success: false, error: e.message || '网络请求失败' };
+          return { success: false, error: '网络请求失败: ' + e.message };
         }
       },
       

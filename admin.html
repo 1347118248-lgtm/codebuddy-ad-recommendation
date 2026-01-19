@@ -895,50 +895,29 @@
     </div>
   </div>
 
-  <!-- Supabase SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
-    // ============ Supabase 配置 ============
+    // ============ Supabase 配置（直接使用REST API） ============
     const SUPABASE_URL = 'https://isbqjuyaxkmfksprzndf.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlzYnFqdXlheGttZmtzcHJ6bmRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3OTg3MTAsImV4cCI6MjA4NDM3NDcxMH0.CeBYgrclxY6R-pRoK3Gew7Vpygl2aE16wI6VDM3yPzg';
-    
-    let supabase = null;
-    
-    function initSupabase() {
-      if (window.supabase && window.supabase.createClient) {
-        try {
-          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-          console.log('Supabase初始化成功');
-          return true;
-        } catch(e) {
-          console.error('Supabase初始化失败:', e);
-          return false;
-        }
-      }
-      return false;
-    }
-    
-    if (!initSupabase()) {
-      setTimeout(initSupabase, 500);
-      setTimeout(initSupabase, 1500);
-    }
 
-    // ============ 数据库模块 ============
+    // ============ 数据库模块（使用原生fetch） ============
     const SurveyDB = {
-      // 获取所有问卷响应（从Supabase）
+      // 获取所有问卷响应
       async getResponses() {
-        if (!supabase) initSupabase();
-        if (!supabase) {
-          console.error('Supabase SDK加载失败');
-          return [];
-        }
         try {
-          const { data, error } = await supabase
-            .from('survey_responses')
-            .select('*')
-            .order('created_at', { ascending: false });
+          const response = await fetch(`${SUPABASE_URL}/rest/v1/survey_responses?select=*&order=created_at.desc`, {
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            }
+          });
           
-          if (error) throw error;
+          if (!response.ok) {
+            console.error('获取数据失败:', response.status);
+            return [];
+          }
+          
+          const data = await response.json();
           
           // 转换字段名以兼容现有代码
           return (data || []).map(row => ({
@@ -956,7 +935,7 @@
             dissatisfiedReasons: row.dissatisfied_reasons,
             satisfiedReasons: row.satisfied_reasons,
             otherReason: row.other_reason,
-            screenshots: row.screenshots,
+            screenshotCount: row.screenshot_count || 0,
             uploadTime: row.upload_time || row.created_at
           }));
         } catch (e) {
@@ -967,19 +946,42 @@
 
       // 清空所有数据
       async clearAll() {
-        if (!supabase) {
-          return { success: false, error: 'Supabase未初始化' };
-        }
         try {
-          const { error } = await supabase
-            .from('survey_responses')
-            .delete()
-            .neq('id', 0); // 删除所有记录
+          const response = await fetch(`${SUPABASE_URL}/rest/v1/survey_responses?id=gt.0`, {
+            method: 'DELETE',
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            }
+          });
           
-          if (error) throw error;
+          if (!response.ok) {
+            return { success: false, error: '删除失败: ' + response.status };
+          }
           return { success: true };
         } catch (e) {
           console.error('清空数据失败:', e);
+          return { success: false, error: e.message };
+        }
+      },
+
+      // 删除单条记录
+      async deleteResponse(id) {
+        try {
+          const response = await fetch(`${SUPABASE_URL}/rest/v1/survey_responses?id=eq.${id}`, {
+            method: 'DELETE',
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            }
+          });
+          
+          if (!response.ok) {
+            return { success: false, error: '删除失败: ' + response.status };
+          }
+          return { success: true };
+        } catch (e) {
+          console.error('删除记录失败:', e);
           return { success: false, error: e.message };
         }
       }
