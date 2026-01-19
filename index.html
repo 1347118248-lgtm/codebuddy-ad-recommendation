@@ -784,18 +784,36 @@
     </div>
   </div>
 
-  <!-- Supabase SDK (使用国内更快的CDN) -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
     // ============ Supabase 配置 ============
     const SUPABASE_URL = 'https://isbqjuyaxkmfksprzndf.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlzYnFqdXlheGttZmtzcHJ6bmRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3OTg3MTAsImV4cCI6MjA4NDM3NDcxMH0.CeBYgrclxY6R-pRoK3Gew7Vpygl2aE16wI6VDM3yPzg';
     
     let supabase = null;
-    try {
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch(e) {
-      console.error('Supabase初始化失败:', e);
+    
+    // 等待SDK加载完成后初始化
+    function initSupabase() {
+      if (window.supabase && window.supabase.createClient) {
+        try {
+          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+          console.log('Supabase初始化成功');
+          return true;
+        } catch(e) {
+          console.error('Supabase初始化失败:', e);
+          return false;
+        }
+      }
+      return false;
+    }
+    
+    // 立即尝试初始化
+    if (!initSupabase()) {
+      // 如果失败，等待一下再试
+      setTimeout(initSupabase, 500);
+      setTimeout(initSupabase, 1500);
+      setTimeout(initSupabase, 3000);
     }
 
     // ============ 数据库模块 ============
@@ -858,8 +876,12 @@
       
       // 保存问卷响应到Supabase
       async saveResponse(response) {
+        // 尝试初始化（如果之前失败）
         if (!supabase) {
-          return { success: false, error: 'Supabase未初始化，请刷新页面重试' };
+          initSupabase();
+        }
+        if (!supabase) {
+          return { success: false, error: 'Supabase SDK加载失败，请检查网络后刷新页面' };
         }
         try {
           const wuid = 'W' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();

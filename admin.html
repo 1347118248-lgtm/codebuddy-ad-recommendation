@@ -896,25 +896,40 @@
   </div>
 
   <!-- Supabase SDK -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
     // ============ Supabase 配置 ============
     const SUPABASE_URL = 'https://isbqjuyaxkmfksprzndf.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlzYnFqdXlheGttZmtzcHJ6bmRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3OTg3MTAsImV4cCI6MjA4NDM3NDcxMH0.CeBYgrclxY6R-pRoK3Gew7Vpygl2aE16wI6VDM3yPzg';
     
     let supabase = null;
-    try {
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch(e) {
-      console.error('Supabase初始化失败:', e);
+    
+    function initSupabase() {
+      if (window.supabase && window.supabase.createClient) {
+        try {
+          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+          console.log('Supabase初始化成功');
+          return true;
+        } catch(e) {
+          console.error('Supabase初始化失败:', e);
+          return false;
+        }
+      }
+      return false;
+    }
+    
+    if (!initSupabase()) {
+      setTimeout(initSupabase, 500);
+      setTimeout(initSupabase, 1500);
     }
 
     // ============ 数据库模块 ============
     const SurveyDB = {
       // 获取所有问卷响应（从Supabase）
       async getResponses() {
+        if (!supabase) initSupabase();
         if (!supabase) {
-          console.error('Supabase未初始化');
+          console.error('Supabase SDK加载失败');
           return [];
         }
         try {
